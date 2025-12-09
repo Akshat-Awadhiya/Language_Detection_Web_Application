@@ -8,8 +8,8 @@ CORS(app)
 
 # ---- FIXED: Relative Path ----
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "backend", "model", "model.pkl")
-VECTORIZER_PATH = os.path.join(BASE_DIR, "backend", "model", "cv.pkl")
+MODEL_PATH = os.path.join(BASE_DIR, "model", "model.pkl")
+VECTORIZER_PATH = os.path.join(BASE_DIR, "model", "cv.pkl")
 
 # Load Model & Vectorizer
 try:
