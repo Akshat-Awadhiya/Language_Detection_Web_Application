@@ -1,60 +1,46 @@
 import os
-import threading
-import webbrowser
 from flask import Flask, request, jsonify, render_template
 import joblib
-import numpy as np
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-CORS(app)  # Enable CORS for API access (like from JS)
+CORS(app)
 
-# Paths
-PROJECT_ROOT = r"C:\Users\aksha\OneDrive\Desktop\Language Translation Project"
-model_path = os.path.join(PROJECT_ROOT, "model", "model.pkl")
-vectorizer_path = os.path.join(PROJECT_ROOT, "model", "cv.pkl")
+# ---- FIXED: Relative Path ----
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "model", "model.pkl")
+VECTORIZER_PATH = os.path.join(BASE_DIR, "model", "cv.pkl")
 
 # Load Model & Vectorizer
 try:
-    model = joblib.load(model_path)
-    vectorizer = joblib.load(vectorizer_path)
-    print("✅ Model and Vectorizer loaded successfully!")
+    model = joblib.load(MODEL_PATH)
+    vectorizer = joblib.load(VECTORIZER_PATH)
+    print("Model Loaded Successfully")
 except Exception as e:
-    print(f"❌ Error loading model or vectorizer: {e}")
-    model, vectorizer = None, None
+    print(f"Error: {e}")
+    model = None
+    vectorizer = None
 
-# Root Route - Serve HTML Page
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template("index.html")
 
-# Avoid favicon 404
-@app.route('/favicon.ico')
-def favicon():
-    return '', 204
-
-# Prediction API
 @app.route('/predict', methods=['POST'])
 def predict():
-    if model is None or vectorizer is None:
-        return jsonify({'error': 'Model or Vectorizer not loaded properly'}), 500
+    if not model or not vectorizer:
+        return jsonify({"error": "Model not loaded"}), 500
+    
+    data = request.get_json()
+    text = data.get("text", "").strip()
 
-    try:
-        data = request.get_json()
-        if 'text' not in data or not data['text'].strip():
-            return jsonify({'error': 'No text provided'}), 400
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
 
-        input_text = data['text']
-        input_vector = vectorizer.transform([input_text]).toarray()
-        prediction = model.predict(input_vector)
+    input_vec = vectorizer.transform([text]).toarray()
+    prediction = model.predict(input_vec)[0]
 
-        return jsonify({'language': prediction[0]})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+    return jsonify({"language": prediction})
 
-def open_browser():
-    webbrowser.open_new('http://127.0.0.1:5000/')
-
-if __name__ == '__main__':
-    threading.Timer(1.25, open_browser).start()
-    app.run(debug=True)
+# ---- IMPORTANT FOR RENDER ----
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
