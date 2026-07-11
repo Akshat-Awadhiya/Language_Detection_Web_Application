@@ -18,22 +18,46 @@
         </div>
     </div>
 
-    <script>
-        function detectLanguage() {
-            let text = document.getElementById("textInput").value;
-            
-            fetch("/predict", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: userText })
-        })
+ <script>
+function detectLanguage() {
 
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("result").innerText = data.language || data.error;
-            })
-            .catch(error => console.error("Error:", error));
+    // Get user input
+    const text = document.getElementById("textInput").value.trim();
+
+    // Validate input
+    if (text === "") {
+        alert("Please enter some text.");
+        return;
+    }
+
+    // Show loading message
+    document.getElementById("result").innerText = "Detecting...";
+
+    // Send request to Flask backend
+    fetch("/predict", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            text: text
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.language) {
+            document.getElementById("result").innerText = data.language;
+        } else {
+            document.getElementById("result").innerText = data.error || "Prediction failed";
         }
-    </script>
+
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        document.getElementById("result").innerText = "Server Error";
+    });
+}
+</script>
 </body>
 </html>
