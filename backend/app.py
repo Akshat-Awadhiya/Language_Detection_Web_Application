@@ -27,10 +27,10 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if not model or not vectorizer:
+    if model is None or vectorizer is None:
         return jsonify({"error": "Model not loaded"}), 500
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     text = data.get("text", "").strip()
 
     if not text:
@@ -43,4 +43,6 @@ def predict():
 
 # ---- IMPORTANT FOR RENDER ----
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
