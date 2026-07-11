@@ -1,6 +1,8 @@
 Flask
+Flask-Cors
 gunicorn
 joblib
 numpy
-scikit-learn
-flask-cors
+scikit-learn==1.5.1
+scipy
+threadpoolctl
